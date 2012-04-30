@@ -2,7 +2,7 @@ import java.util.HashMap;
 
 
 public class ParsingTable {
-	HashMap<Nonterminal, HashMap<Terminal, Rule>> mnt;
+	public HashMap<Nonterminal, HashMap<Terminal, Rule>> mnt;
 	Terminal[] terminals;
 	Nonterminal[] nonterminals;
 	public ParsingTable(Terminal[] terminals, Nonterminal[] nonterminals) {
@@ -34,6 +34,7 @@ public class ParsingTable {
 	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
+		sb.append(mnt + "\n");
 		sb.append("M[N,T]\t\t|");
 		for (Terminal t : terminals) {
 			if (t.name.length() > 5) sb.append("  " + t.name + "\t\t\t|");
@@ -44,15 +45,17 @@ public class ParsingTable {
 			if (n.name.length() > 9) sb.append(n.name + "\t|");
 			else if (n.name.length() > 5) sb.append(n.name + "\t\t|");
 			else sb.append(n.name + "\t\t\t|");
+			String item = "";
 			for (Terminal t : terminals) {
 				Rule r = mnt.get(n).get(t);
 				if (r != null) {
-					if (r.toString().length() > 10) sb.append("  " + r + "\t\t|");
-					else if (r.toString().length() > 5) sb.append ("  " + r + "\t\t\t|");
-					else sb.append("  " + r + "\t\t\t\t|");
+					if (r.toString().length() > 10) item += "  " + r + "\t\t|";
+					else if (r.toString().length() > 5) item += "  " + r + "\t\t\t|";
+					else item += "  " + r + "\t\t\t\t|";
 				}
-				else sb.append("\t\t\t\t|");
+				else item += "\t\t\t\t|";
 			}
+			sb.append(item);
 			sb.append("\n");
 		}
 		return sb.toString();

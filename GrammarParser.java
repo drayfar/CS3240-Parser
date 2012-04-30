@@ -7,7 +7,8 @@ public class GrammarParser {
 	private Terminal[] terminals;
 	private Nonterminal[] nonterminals;
 	private Nonterminal startToken;
-	private ParsingTable parsingTable;
+	//THIS IS THE PARSING TABLE (implemented as a 2D hashmap)
+	public ParsingTable parsingTable;
 	
 	public GrammarParser(String filename) throws IOException, FileNotFoundException {
 		File inputFile = new File(filename);
