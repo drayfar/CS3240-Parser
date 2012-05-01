@@ -210,7 +210,7 @@ public class GrammarParser {
 	}
 	
 	private void createFollowSets() {
-		startToken.EnsureFollowContains(new Terminal[] {new Terminal(Terminal.TerminalType.END)});
+		startToken.EnsureFollowContains(new Token[] {terminals[terminals.length-1]}); //END
 		boolean somethingChanged;
 		do {
 			somethingChanged = false;
