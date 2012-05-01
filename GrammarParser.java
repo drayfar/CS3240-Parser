@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GrammarParser {
@@ -24,13 +25,10 @@ public class GrammarParser {
 		nonterminals = generateNonterminals(split);
 		startToken = generateStartToken(split);
 		addRules(split);
-		System.out.println(this);
 		removeLeftRecursion();
-		System.out.println(this);
+		//leftFactor();
 		createFirstSets();
-		System.out.println(this);
 		createFollowSets();
-		System.out.println(this);
 		parsingTable = new ParsingTable(removeEpsilon(terminals), nonterminals);
 		System.out.println(parsingTable);
 	}
@@ -134,8 +132,6 @@ public class GrammarParser {
 	private void removeLeftRecursion() {
 		int iterations = nonterminals.length; //so we don't iterate too many times when adding to nonterminals
 		for (int i = 0; i < iterations; i++) {
-			System.out.println("Before iteration " + i);
-			System.out.println(this);
 			Nonterminal nonterminal = nonterminals[i];
 			for (int j = 0; j < i; j++) {
 				ArrayList<Token[]> with = new ArrayList<Token[]>();
@@ -144,8 +140,6 @@ public class GrammarParser {
 				}
 				Token[][] withArray = with.toArray(new Token[0][0]);
 				nonterminal.replaceRule(nonterminals[j], with.toArray(new Token[0][0]));
-				System.out.println("After i=" + i + " j=" + j);
-				System.out.println(this);
 			}
 			if (nonterminal.isLeftRecursive()) {
 				//Remove immediate left recursion
@@ -187,7 +181,54 @@ public class GrammarParser {
 	}
 	
 	private void leftFactor() {
-		
+		boolean somethingChanged;
+		do {
+			somethingChanged = false;
+			for (Nonterminal A : nonterminals) {
+				if (A.rules.size() < 2) continue;
+				ArrayList<ArrayList<Token>> prefixes = new ArrayList<ArrayList<Token>>(A.rules.size());
+				//Populate the ArrayLists
+				for (Rule rule : A.rules) {
+					ArrayList<Token> r = new ArrayList<Token>(rule.rule.length);
+					for (Token t : rule.rule) {
+						r.add(t);
+					}
+					prefixes.add(r);
+				}
+				//Find the longest prefix that matches 2 or more
+				int maxMatch = 0;
+				List<Token> maxPrefix = null;
+				for (ArrayList<Token> prefix : prefixes) {
+					for (int i = prefix.size(); i > 0; i--) {
+						boolean match = false;
+						for (ArrayList<Token> other : prefixes) {
+							if (prefix == other || i > other.size()) continue;
+							if (prefix.subList(0, i).equals(other.subList(0, i))) {
+								match = true;
+								break;
+							}
+						}
+						if (match && i > 0 && i > maxMatch) { 
+							maxMatch = i;
+							maxPrefix = prefix.subList(0, i);
+							break;
+						}
+					}
+				}
+				if (maxPrefix != null && maxPrefix.size() > 0 && !(maxPrefix.size() == 1 && maxPrefix.get(0).name.equals(Terminal.TerminalType.EPSILON.toString()))) {
+					ArrayList<Rule> matchingRules = new ArrayList<Rule>();
+					for (Rule r : A.rules) {
+						boolean match = true;
+						for (int i = 0; i < maxPrefix.size(); i++) {
+							if (!r.rule[i].equals(maxPrefix.get(i))) match = false;
+						}
+						if (match) {
+							matchingRules.add(r);
+						}
+					}
+				}
+			}
+		} while (somethingChanged);
 	}
 	
 	private void createFirstSets() {
@@ -264,15 +305,12 @@ public class GrammarParser {
 		int i = 0;
 		for (Terminal t : tokens) {
 			if (t.name.equals(Terminal.TerminalType.EPSILON.toString())) continue;
-			ret[i] = t;
+			if (i < ret.length) {
+				ret[i] = t;
+			}
 			i++;
 		}
 		return ret;
-	}
-	
-	private void createTable() {
-		
-		
 	}
 	
 	public String toString() {
