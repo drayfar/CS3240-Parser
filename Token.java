@@ -10,7 +10,14 @@ public abstract class Token {
 	
 	public abstract Token[] Follow();
 	
-	public boolean equals(Token t) {
-		return t.name.equals(this.name);
+	@Override
+	public boolean equals(Object t) {
+		if (!(t instanceof Token)) return false;
+		return ((Token)t).name.equals(this.name);
+	}
+	
+	@Override
+	public int hashCode() {
+		return this.name.hashCode();
 	}
 }

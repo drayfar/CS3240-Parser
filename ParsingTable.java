@@ -43,24 +43,27 @@ public class ParsingTable {
 		sb.append(mnt + "\n");
 		sb.append("M[N,T]\t\t|");
 		for (Terminal t : terminals) {
-			if (t.name.length() > 5) sb.append("  " + t.name + "\t\t\t|");
-			else sb.append("  " + t.name + "\t\t\t\t|");
+			if (t.name.length() > 4) sb.append("  " + t.name + "\t\t\t\t|");
+			else sb.append("  " + t.name + "\t\t\t\t\t|");
 		}
 		sb.append("\n");
 		for (Nonterminal n : mnt.keySet()) {
-			if (n.name.length() > 9) sb.append(n.name + "\t|");
+			if (n.name.length() > 15) sb.append(n.name + "|");
+			else if (n.name.length() > 9) sb.append(n.name + "\t|");
 			else if (n.name.length() > 5) sb.append(n.name + "\t\t|");
 			else sb.append(n.name + "\t\t\t|");
 			for (Terminal t : terminals) {
 				Rule r = mnt.get(n).get(t);
 				if (r != null) {
-					if (r.toString().length() > 19) sb.append("  " + r + "\t|");
-					else if (r.toString().length() > 10) sb.append("  " + r + "\t\t|");
-					else if (r.toString().length() > 5) sb.append("  " + r + "\t\t\t|");
-					else sb.append("  " + r + "\t\t\t\t|");
+					if (r.toString().length() > 29) sb.append("  " + r + " |");
+					else if (r.toString().length() > 22) sb.append("  " + r + "\t|");
+					else if (r.toString().length() > 19) sb.append("  " + r + "\t\t|");
+					else if (r.toString().length() > 10) sb.append("  " + r + "\t\t\t|");
+					else if (r.toString().length() > 5) sb.append("  " + r + "\t\t\t\t|");
+					else sb.append("  " + r + "\t\t\t\t\t|");
 				}
 				else {
-					sb.append("\t\t\t\t|");
+					sb.append("\t\t\t\t\t|");
 				}
 			}
 			sb.append("\n");

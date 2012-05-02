@@ -26,10 +26,11 @@ public class GrammarParser {
 		startToken = generateStartToken(split);
 		addRules(split);
 		removeLeftRecursion();
-		//leftFactor();
+		leftFactor();
 		createFirstSets();
 		createFollowSets();
 		parsingTable = new ParsingTable(removeEpsilon(terminals), nonterminals);
+		System.out.println(this);
 		System.out.println(parsingTable);
 	}
 	
@@ -214,17 +215,74 @@ public class GrammarParser {
 							break;
 						}
 					}
+					if (maxPrefix != null) break;
 				}
 				if (maxPrefix != null && maxPrefix.size() > 0 && !(maxPrefix.size() == 1 && maxPrefix.get(0).name.equals(Terminal.TerminalType.EPSILON.toString()))) {
-					ArrayList<Rule> matchingRules = new ArrayList<Rule>();
-					for (Rule r : A.rules) {
+					somethingChanged = true;
+					ArrayList<Integer> matchingRules = new ArrayList<Integer>();
+					for (int i = 0; i < A.rules.size(); i++) {
+						Rule r = A.rules.get(i);
 						boolean match = true;
-						for (int i = 0; i < maxPrefix.size(); i++) {
-							if (!r.rule[i].equals(maxPrefix.get(i))) match = false;
+						for (int i1 = 0; i1 < maxPrefix.size(); i1++) {
+							if (r.rule.length <= i1 || !r.rule[i1].equals(maxPrefix.get(i1))) match = false;
 						}
 						if (match) {
-							matchingRules.add(r);
+							matchingRules.add(i);
 						}
+					}
+					boolean newNonterminalIsNew = true;
+					Nonterminal newNonterminal = null;
+					for (Nonterminal n : nonterminals) {
+						if (n.name.equals(A.name + "'")) {
+							newNonterminal = n;
+							newNonterminalIsNew = false;
+						}
+					}
+					if (newNonterminalIsNew) newNonterminal = new Nonterminal(A.name + "'");
+					for (Integer i : matchingRules) {
+						Rule r = A.rules.get(i);
+						Rule newRule = new Rule();
+						newRule.rule = new Token[r.rule.length - maxPrefix.size()];
+						for (int i1 = maxPrefix.size(); i1 < r.rule.length; i1++) {
+							newRule.rule[i1-maxPrefix.size()] = r.rule[i1];
+						}
+						if (newRule.rule.length == 0) {
+							Terminal epsilon = null;
+							for (Terminal t : terminals) {
+								if (t.name.equals(Terminal.TerminalType.EPSILON.toString())) epsilon = t;
+							}
+							if (epsilon == null) {
+								epsilon = new Terminal(Terminal.TerminalType.EPSILON);
+								Terminal[] newTerminals = new Terminal[terminals.length + 1];
+								for (int j = 0; j < terminals.length; j++) {
+									newTerminals[j] = terminals[j];
+								}
+								newTerminals[terminals.length] = epsilon;
+								terminals = newTerminals;
+							}
+							newRule.rule = new Token[]{epsilon};
+						}
+						newNonterminal.AddRule(newRule);
+					}
+					Rule newRule = new Rule();
+					newRule.rule = new Token[maxPrefix.size() + 1];
+					for (int i = 0; i < maxPrefix.size(); i++) {
+						newRule.rule[i] = maxPrefix.get(i);
+					}
+					newRule.rule[newRule.rule.length - 1] = newNonterminal;
+					ArrayList<Rule> rulesToRemove = new ArrayList<Rule>();
+					for (int i : matchingRules) {
+						rulesToRemove.add(A.rules.get(i));
+					}
+					for (Rule r : rulesToRemove) A.rules.remove(r);
+					A.rules.add(newRule);
+					if (newNonterminalIsNew) {
+						Nonterminal[] newNonterminals = new Nonterminal[nonterminals.length + 1];
+						for (int i = 0; i < nonterminals.length; i++) {
+							newNonterminals[i] = nonterminals[i];
+						}
+						newNonterminals[nonterminals.length] = newNonterminal;
+						nonterminals = newNonterminals;
 					}
 				}
 			}
@@ -251,7 +309,11 @@ public class GrammarParser {
 	}
 	
 	private void createFollowSets() {
-		startToken.EnsureFollowContains(new Token[] {terminals[terminals.length-1]}); //END
+		Terminal end = null;
+		for (Terminal t : terminals) {
+			if (t.name.equals(Terminal.TerminalType.END.toString())) end = t;
+		}
+		startToken.EnsureFollowContains(new Token[] {end}); //END
 		boolean somethingChanged;
 		do {
 			somethingChanged = false;

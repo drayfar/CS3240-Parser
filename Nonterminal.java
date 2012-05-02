@@ -57,7 +57,7 @@ public class Nonterminal extends Token {
 	
 	public void AddRule(Rule rule) {
 		Rule cleanRule = cleanRule(rule);
-		rules.add(cleanRule);
+		if (!rules.contains(rule)) rules.add(cleanRule);
 	}
 	
 	public void DeleteRule(Rule rule) {

@@ -54,4 +54,15 @@ public class Rule {
 		}
 		return sb.toString();
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof Rule)) return false;
+		Rule r = (Rule)o;
+		if (r.rule.length != rule.length) return false;
+		for (int i = 0; i < rule.length; i++) {
+			if (rule[i] != r.rule[i]) return false;
+		}
+		return true;
+	}
 }
